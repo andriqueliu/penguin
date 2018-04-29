@@ -1,14 +1,21 @@
-ALTPATH = $(altPath)
-ifeq ($(ALTPATH),)
-	FINALPATH = $(shell uname -r)
+# If KERNELRELEASE is defined, we've been invoked from the
+# kernel build system and can use its language.
+ifneq ($(KERNELRELEASE),)
+	obj-m := hello.o
+
+# Otherwise we were called directly from the command
+# line; invoke the kernel build system.
 else
-	FINALPATH = ALTPATH
-endif
+	
+	# Set KERNELDIR if building for a specific kernel is
+	# desired.
+	KERNELDIR ?= /lib/modules/$(shell uname -r)/build
+	PWD := $(shell pwd)
 
-obj-m += hello.o
-
-all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+default:
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) modules
 
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) -C $(KERNELDIR) M=$(PWD) clean
+
+endif
